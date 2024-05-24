@@ -1,153 +1,106 @@
-.playlist-header {
+#main {
+  height: calc(100% - 56px);
+}
+#main .container,
+#main #container {
+  height: 100%;
+}
+#footer {
+  display: none;
+}
+.app {
+  height: 100%;
+  min-height: 100%;
+}
+.app .playlists .playlist-header {
   display: flex;
   justify-content: space-between;
 }
-.playlist-header > .btn {
-  font-size: 32px;
-}
-.playlist[data-state="row"] {
-  display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.playlist[data-state="row"] .track {
-  display: flex;
-  flex-direction: column;
-  justify-content: end;
-  width: 20%;
-  min-height: 200px;
-  margin: 1%;
-  transition: all 0.3s ease-in-out;
-  cursor: pointer;
-}
-.playlist[data-state="row"] .track[data-state="active"] {
-  transform: scale(1.1);
-}
-.playlist[data-state="row"] .track .track-info {
-  background: rgba(255, 255, 255, 0.9);
-  transition: all 0.3s ease-in-out;
-  opacity: 0;
-  font-size: 12px;
-  padding: 10px;
-}
-.playlist[data-state="row"] .track .track-info .track-title {
-  margin: 0;
-  text-align: left;
-}
-.playlist[data-state="row"] .track .track-info .track-artist {
-  margin: 0;
-  text-align: left;
-}
-.playlist[data-state="row"] .track:hover {
-  transform: scale(1.1);
-}
-.playlist[data-state="row"] .track:hover .track-info {
-  opacity: 1;
-}
-.playlist[data-state="list"] {
-  margin: 30px 0;
-  padding: 0;
-}
-.playlist[data-state="list"] .track {
-  display: flex;
-  flex-direction: row;
-  margin: 5px 0;
-  cursor: pointer;
-}
-.playlist[data-state="list"] .track[data-state="active"] {
-  background: rgba(0, 0, 0, 0.1);
-}
-.playlist[data-state="list"] .track .track-thumb {
-  height: 70px;
-  width: 5%;
-  min-width: 70px;
-}
-.playlist[data-state="list"] .track .track-info {
-  width: 85%;
-  padding: 5px;
-}
-.playlist[data-state="list"] .track .track-info .track-title {
-  margin: 0;
-  font-size: 24px;
-  padding: 0 0 0.2em;
-}
-.playlist[data-state="list"] .track .track-info .track-artist {
-  margin: 0;
-  padding: 0;
-  font-size: 12px;
-}
-.playlist[data-state="list"] .track .track-controls {
-  width: 5%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-.playlist[data-state="list"] .track .track-length {
-  width: 5%;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.playlist[data-state="list"] .track:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-.player {
-  position: fixed;
-  bottom: 0;
-  min-height: 50px;
-  max-height: 51px;
-  min-width: 100%;
-  left: 0;
-  right: 0;
-  background: #E4E4E4;
-}
-.player .player-progress {
-  position: absolute;
-  top: 0;
-  left: 0;
+.app .playlists .submit {
   width: 100%;
-  height: 5px;
-  transition: height 0.3s;
+  color: #666;
+  margin: 3px;
+  display: inline-block;
+  padding: 5px;
+  text-decoration: none;
 }
-.player .player-progress .player-completed {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 5px;
-  background: yellowgreen;
+.app .playlists .submit:hover {
+  background: #eee;
 }
-.player > .container {
+.app .playlists .tracks .track {
   display: flex;
   flex-direction: row;
+  cursor: pointer;
 }
-.player > .container .player-thumb {
-  width: 10%;
-  margin: 2.5px;
-  max-height: 45px;
-  max-width: 45px;
+.app .playlists .tracks .track:hover {
+  background: #eee;
 }
-.player > .container .player-controls {
-  width: 75%;
-  margin: 9px 0;
+.app .playlists .tracks .track .track-thumb {
+  padding: 2.5px;
 }
-.player > .container .player-controls i {
-  font-size: 32px;
-  padding: 0 5px;
+.app .playlists .tracks .track .track-thumb img {
+  min-height: 79px;
+  min-width: 79px;
+  max-height: 80px;
+  max-width: 80px;
 }
-.view-header {
-  display: flex;
-  justify-content: space-between;
+.app .playlists .tracks .track .track-info {
+  justify-content: center;
+  flex-direction: column;
+}
+.app .playlists .tracks .track .track-info .track-title {
+  font-size: 21px;
+  margin: 0;
+  padding: 0;
+}
+.app .playlists .tracks .track .track-info .track-artist {
+  font-size: 14px;
+  margin: 0;
+  padding: 0;
+}
+.app .playlists .tracks .track .track-length {
+  justify-content: center;
   align-items: center;
 }
-.view-header button[type="button"] {
-  text-transform: uppercase;
+.app .playlists .tracks .track .track-controls {
+  justify-content: center;
+  align-items: center;
 }
-.view-header .dropdown-item {
-  cursor: pointer;
+.app .playlists .tracks .track .track-controls > div {
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  display: flex;
+  height: 100%;
+  width: 40px;
+}
+.app .app-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+.app .app-error {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100%;
+  width: 100%;
+}
+.app .app-error .error-code {
+  font-size: 32px;
+  color: #AAA;
+  padding: 0;
+  margin: 0;
+}
+.app .app-error .error-message {
+  font-size: 21px;
+  color: #666;
+  padding: 0;
+  margin: 0;
 }
 /*# sourceMappingURL=player.css.map */

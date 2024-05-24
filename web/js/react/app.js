@@ -3,110 +3,102 @@ class AppState {
     static PLAYER_PLAY = "PLAY";
     static PLAYER_RESUME = "RESUME";
 }
+
 function App() {
     const [data, _setData] = React.useState({
-        currentTrack: {},
-        currentPlaylist: [],
-        playlists: playlists,
-        index: undefined
     });
     const setData = props => {
         let target = {...data, ...props}
-        window.localStorage.setItem("data", JSON.stringify(target))
         _setData(target)
     }
     const [config, _setConfig] = React.useState({
-        mode: "list",
-        stage: "root",
+        level: "root"
     });
     const setConfig = props => {
         let target = {...config, ...props}
-        window.localStorage.setItem("config", JSON.stringify(target))
         _setConfig(target)
     }
-    const [state, _setState] = React.useState(AppState.PLAYER_PAUSE);
-    const setState = props => {
-        _setState(props)
-    }
-    const [currentTrack, _setCurrentTrack] = React.useState({});
-    const setCurrentTrack = props => {
-        console.log(props)
-        _setCurrentTrack(props)
-    }
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState({});
 
     React.useEffect(() => {
-        let tmpData = JSON.parse(window.localStorage.getItem("data"))
-        let tmpConfig = JSON.parse(window.localStorage.getItem("config"))
-        if ( tmpData ) {
-            tmpData.playlists = [{
-                "title": "My Collection",
-                "tracks": collection
-            }].concat(playlists);
-            console.log(tmpData);
-        } else {
-            tmpData = {
-                playlists: [{"title": "My Collection", "tracks": collection}]
-            }
-        }
-        setData(tmpData)
-        setConfig(tmpConfig)
+        let timer = setInterval(() => {
+            fetch("https://garmayev.local/api/default/welcome", {
+                headers: {
+                    "Authorization": `Bearer ${authKey}`
+                },
+                mode: "cors"
+            }).then(response => response.json()).then(response => {
+                if (response.ok) {
+                    setData(response.data)
+                } else {
+                    setError({code: response.code, message: response.message})
+                }
+                setLoading(true)
+            })
+        }, 5000);
+
+        return () => clearInterval(timer);
     }, []);
 
-    function findTrackById(array, id) {
-        let index = -1;
-        array.map((item, position) => {
-            if (item.id === id) index = position
-        })
-        return index;
-    }
-    function setFavorite(item) {
-        collection.splice(findTrackById(collection, item.id), 1, item)
-        for (const playlist of data.playlists) {
-            playlist.splice(findTrackById(playlist, item.id), 1, item)
-        }
-        allTrack.splice(findTrackById(collection, item.id), 1, item)
-        data.playlists.splice(0, 1, {
-            title: "My Collection",
-            tracks: collection
-        })
-        setData(data)
-    }
-
     React.useEffect(() => {
-        data.currentPlaylist = allTracks;
-        setData(data)
-    }, [config.stage])
+        setConfig(config)
+    }, [config.level])
 
-    console.log(allTracks)
-
-    switch (config.stage) {
-        case "root":
+    if (loading) {
+        if (Object.keys(error).length) {
             return (
-                <>
-                    <div className={"row"}>
-                        <div className={"col-9"}>
-                            <Playlist config={{...config, stage: "playlist"}} data={{...data, currentPlaylist: {title: "Free", tracks: allTracks}}}
-                                      setter={{data: setData, config: setConfig, state: setState, currentTrack: setCurrentTrack, favorite: setFavorite}} />
-                        </div>
-                        <div className={"col-3"}>
-                            <View className={"col-3"} config={config} data={data} setter={{data: setData, config: setConfig}}>
-                                <Playlist config={config} data={data}
-                                          setter={{data: setData, config: setConfig, state: setState, currentTrack: setCurrentTrack, favorite: setFavorite}} />
-                            </View>
-                        </div>
+                <div className={"app"}>
+                    <div className={"app-error"}>
+                        <p className={"error-code"}>{error.code}</p>
+                        <p className={"error-message"}>{error.message}</p>
                     </div>
-                    <Player data={currentTrack} state={state} setter={{data: setData, config: setConfig, state: setState, favorite: setFavorite}} />
-                </>
+                </div>
             )
-        case "playlist":
-            return (
-                <>
-                    <View config={config} data={data} setter={{data: setData, config: setConfig}}>
-                        <Playlist config={config} data={data}
-                                  setter={{data: setData, config: setConfig, state: setState, currentTrack: setCurrentTrack, favorite: setFavorite}} />
-                    </View>
-                    <Player data={currentTrack} state={state} setter={{data: setData, config: setConfig, state: setState, favorite: setFavorite}} />
-                </>
-            )
+        } else {
+            switch (config.level) {
+                case "root":
+                    return (
+                        <div className={"app"}>
+                            <div className={"playlists row"}>
+                                <div className={"col-10 border-right"}>
+                                    <Playlist data={{...data, currentPlaylist: {title: "", tracks: data.allTracks}}}
+                                              setter={{data: setData, error: setError}} mode={{level: "playlist"}}/>
+                                </div>
+                                <div className={"col-2"}>
+                                    <Playlist setter={{data: setData, config: setConfig, error: setError}}
+                                              data={data} mode={{level: "root"}}/>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                case "playlist":
+                    return (
+                        <div className={"app"}>
+                            <div className={"playlists"}>
+                                <header className={"playlist-header"}>
+                                    <div></div>
+                                    <div className={"playlist-title"}>{data.currentPlaylist ? data.currentPlaylist.title : ""}</div>
+                                    <div className={"playlist-close"}>
+                                        <i className={"fa-solid fa-times"} onClick={() => {
+                                            setConfig({level: "root"})
+                                        }} />
+                                    </div>
+                                </header>
+                                <Playlist setter={{data: setData, config: setConfig, error: setError, loading: setLoading}}
+                                          data={data} mode={{level: "playlist"}}/>
+                            </div>
+                        </div>
+                    )
+                case "user":
+                    return (<></>)
+            }
+        }
+    } else {
+        return (
+            <div className={"app"}>
+                <p className={"app-loading"}>Loading ...</p>
+            </div>
+        )
     }
 }
