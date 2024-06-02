@@ -6,9 +6,41 @@ use app\models\Playlist;
 use app\models\Track;
 use app\models\TrackPlaylist;
 use app\models\TrackUser;
+use yii\filters\auth\CompositeAuth;
+use yii\filters\auth\HttpBasicAuth;
+use yii\filters\auth\HttpBearerAuth;
+use yii\filters\auth\QueryParamAuth;
+use yii\web\Response;
 
-class TrackController extends \yii\rest\Controller
+class TrackController extends \yii\rest\ActiveController
 {
+    public $modelClass = Track::class;
+
+    public function behaviors()
+    {
+        $behaviors = parent::behaviors();
+        $behaviors['authenticator'] = [
+            'class' => CompositeAuth::class,
+            'authMethods' => [
+                HttpBasicAuth::class,
+                HttpBearerAuth::class,
+                QueryParamAuth::class,
+            ],
+        ];
+        $behaviors['authenticator']['except'] = ['options'];
+        return $behaviors;
+    }
+
+    public function beforeAction($action)
+    {
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        return parent::beforeAction($action);
+    }
+
+    public function actionIndex() {
+        \Yii::$app->response->format = Response::FORMAT_JSON;
+        return Track::find()->all();
+    }
     public function actionFavorite($id) {
         $model = Track::findOne($id);
         $ratingItem = TrackUser::find()->where(['and', ['user_id' => \Yii::$app->user->id], ['track_id' => $id]])->one();
