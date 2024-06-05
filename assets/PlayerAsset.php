@@ -14,4 +14,7 @@ class PlayerAsset extends AssetBundle
         ["/js/react/app.js", "type" => "text/babel", "data-presets" => "react", "data-type" => "module", "data-plugins" => "transform-modules-umd"],
 //        ["/js/react/index.js", "type" => "text/babel"],
     ];
+    public $css = [
+        ["/css/player.css"]
+    ];
 }

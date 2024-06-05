@@ -104,3 +104,35 @@
   margin: 0;
 }
 /*# sourceMappingURL=player.css.map */
+
+.app .player {
+  position: fixed;
+  bottom: 0;
+  background: #fff;
+  left: 0;
+  right: 0;
+}
+.app .player .container {
+  display: flex;
+  flex-direction: row;
+}
+.app .player .container .player-thumb {
+  width: 5%;
+  min-height: 50px;
+}
+
+.app .player .container .player-thumb .image {
+  max-height: 50px;
+}
+
+.app .player .container .player-controls {
+  width: 5%;
+  font-size: 21px;
+  line-height
+}
+.player-controls .fa-solid {
+  margin: 0 3px;
+}
+.app .player .container .player-info {
+  width: 90%;
+}

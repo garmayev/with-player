@@ -4,9 +4,32 @@ namespace app\controllers;
 
 use app\models\Playlist;
 use app\models\Track;
+use yii\filters\AccessControl;
 
 class PlayerController extends \yii\web\Controller
 {
+    /**
+     * {@inheritdoc}
+     */
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['index'],
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
+                'denyCallback' => function () {
+                    $this->redirect(["user/login"]);
+                }
+            ],
+        ];
+    }
+
     public function actionIndex() {
         $user_id = \Yii::$app->user->id;
         $tracks = Track::find()

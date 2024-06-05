@@ -1,12 +1,22 @@
 export default function Playlist({setter, mode, data, missingRemove = false}) {
-    const [playlist, setPlaylist] = React.useState(data.currentPlaylist ?? {});
-
-    function findElementById(id) {
-        for (const key in playlist) {
-            if (Number.parseInt(playlist[key].id) === Number.parseInt(id)) {
-                return playlist[key]
+    const [playlist, _setPlaylist] = React.useState(data.currentPlaylist ?? {});
+    const setPlaylist = (value) => {
+        for (const key in data.myPlaylists) {
+            if (data.myPlaylists[key].id === value.id) {
+                data.myPlaylists[key] = value
             }
         }
+        setter.data({myPlaylists: data.myPlaylists, currentPlaylist: value})
+        setPlaylist(value)
+    }
+
+    function findElementById(id) {
+        for (const key in playlist.tracks) {
+            if (Number.parseInt(playlist.tracks[key].id) === Number.parseInt(id)) {
+                return playlist.tracks[key]
+            }
+        }
+        return null
     }
 
     function findPlaylist(id) {
@@ -31,13 +41,7 @@ export default function Playlist({setter, mode, data, missingRemove = false}) {
                 if (!response.ok) {
                     setter.error({code: response.code, message: response.message})
                 } else {
-                    playlist.tracks.push(track)
-                    for (const key in data.myPlaylists) {
-                        if (data.myPlaylists[key].id === playlist.id) {
-                            data.myPlaylists[key] = playlist
-                        }
-                    }
-                    setter.data({myPlaylists: data.myPlaylists, currentPlaylist: playlist})
+                    setPlaylist(response.playlist)
                 }
             })
             .catch(error => {
@@ -51,23 +55,10 @@ export default function Playlist({setter, mode, data, missingRemove = false}) {
         fetch(`https://player.amgcompany.ru/api/track/remove-from-playlist?playlist_id=${playlist.id}&track_id=${trackId}`)
             .then(response => response.json())
             .then(response => {
-                console.log(response);
                 if (!response.ok) {
                     setter.error({code: response.code, message: response.message})
                 } else {
-                    for (let i = 0; i < playlist.tracks.length; i++) {
-                        let track = playlist.tracks[i];
-                        if (track.id === trackId) {
-                            playlist.splice(i, 1)
-                        }
-                    }
-                    for (const key in data.myPlaylists) {
-                        if (data.myPlaylists[key].id === playlist.id) {
-                            data.myPlaylists[key] = playlist
-                        }
-                    }
                     track.remove()
-                    setter.data({myPlaylists: data.myPlaylists, currentPlaylist: response.playlist})
                     setPlaylist(playlist)
                 }
             })
@@ -97,6 +88,7 @@ export default function Playlist({setter, mode, data, missingRemove = false}) {
                         event.target.classList.add("fa-regular")
                         event.target.classList.add("fa-heart")
                     }
+                    setPlaylist(response.playlist)
                 } else {
                     setter.error(response)
                 }
@@ -104,6 +96,27 @@ export default function Playlist({setter, mode, data, missingRemove = false}) {
             .catch(error => {
                 setter.error(error)
             })
+    }
+
+    function setCurrentTrack(e) {
+        if (e.target.classList.contains("dropdown-toggle") || e.target.classList.contains("dropdown-item")) {
+            console.log(e);
+            return
+        }
+        if (/fa\-/.test(e.target.className)) {
+            console.log(e);
+            return
+        }
+        e.preventDefault();
+//        console.log(playlist.tracks[e.target.closest(".track").getAttribute("data-key")]);
+        let track = e.target.closest(".track")
+        Array.from(document.querySelectorAll(".track.active")).map((item) => {
+            item.classList.remove("active")
+        })
+        track.classList.add("active")
+        let id = track.getAttribute("data-key")
+//        console.log( findElementById(id) )
+        setter.data({currentTrack: findElementById(id)})
     }
 
     switch (mode.level) {
@@ -140,7 +153,7 @@ export default function Playlist({setter, mode, data, missingRemove = false}) {
                         let minutes = Math.floor(item.length / 60);
                         let seconds = item.length % 60;
                         return (
-                            <div className={"track row mb-1"} key={index} data-key={item.id}>
+                            <div className={"track row mb-1"} key={index} data-key={item.id} onClick={setCurrentTrack}>
                                 <div className={"track-thumb col-1"}>
                                     <img src={item.thumb ?? "/img/none.png"} alt={item.title}/>
                                 </div>

@@ -50,7 +50,9 @@ class Track extends \yii\db\ActiveRecord
         return [
             'id',
             'title',
-            'thumb',
+            'thumb' => function (Track $model) {
+                return $model->thumb ?? "/img/none.png";
+            },
             'url',
             'length',
             'artists',

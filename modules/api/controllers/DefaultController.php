@@ -34,9 +34,10 @@ class DefaultController extends Controller
         }
         $user_id = \Yii::$app->user->id;
         $tracks = Track::find()
-            ->joinWith('user', "track.id = track_user.track_id and track_user.user_id = $user_id}")
-            ->where(['>', 'track_user.rating', 0])
-            ->all();
+            ->joinWith('user', "track.id = track_user.track_id")
+            ->where(["and", ['>', 'track_user.rating', 0], ['track_user.user_id' => $user_id]]);
+        \Yii::error($tracks->createCommand()->rawSql);
+        $tracks = $tracks->all();
         return [
             "ok" => !\Yii::$app->user->isGuest,
             "data" => [

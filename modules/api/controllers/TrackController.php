@@ -82,7 +82,12 @@ class TrackController extends \yii\web\Controller
                 $ratingItem->save();
             }
             if ($model->save()) {
-                return ["ok" => true, "data" => $model];
+                $user_id = \Yii::$app->user->id;
+                $tracks = Track::find()
+                    ->joinWith('user', "track.id = track_user.track_id and track_user.user_id = $user_id}")
+                    ->where(['>', 'track_user.rating', 0])
+                    ->all();
+                return ["ok" => true, "data" => $model, "playlist" => ["title" => "My Collection", "tracks" => $tracks]];
             } else {
                 return ["ok" => false, "message" => $model->getErrorSummary(true)];
             }
@@ -98,6 +103,9 @@ class TrackController extends \yii\web\Controller
         if (is_null($track)) {
             return ["ok" => false, "code" => 404, "message" => "Unknown Track"];
         }
+        if ($playlist->getTracks()->exists()) {
+            return ["ok" => true, "playlistId" => $playlist_id, "trackId" => $track_id, "playlist" => $playlist];
+        }
         $playlist->link('tracks', $track);
         if ($playlist->save()) {
             $trackUser = TrackUser::find()->where(['and', 'track_id' => $track_id, 'user_id' => \Yii::$app->user->id])->one();
@@ -111,7 +119,7 @@ class TrackController extends \yii\web\Controller
                 $trackUser->rating += 0.2;
             }
             $trackUser->save();
-            return ["ok" => true, "playlistId" => $playlist_id, "trackId" => $track_id];
+            return ["ok" => true, "playlistId" => $playlist_id, "trackId" => $track_id, "playlist" => $playlist];
         } else {
             return ["ok" => false, "code" => 500, "message" => $playlist->getErrorSummary(true)];
         }

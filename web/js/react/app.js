@@ -1,4 +1,5 @@
 import Playlist from "playlist.js"
+import Player from "player.js"
 
 class AppState {
     static PLAYER_PAUSE = "PAUSE";
@@ -11,6 +12,7 @@ export default function App() {
     });
     const setData = props => {
         let target = {...data, ...props}
+//        console.log(target)
         _setData(target)
     }
     const [config, _setConfig] = React.useState({
@@ -20,33 +22,33 @@ export default function App() {
         let target = {...config, ...props}
         _setConfig(target)
     }
+    const [state, setState] = React.useState(AppState.PLAYER_PAUSE);
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState({});
 
     React.useEffect(() => {
-//        let timer = setInterval(() => {
-            fetch("https://player.amgcompany.ru/api/default/welcome", {
-                headers: {
-                    "Authorization": `Bearer ${authKey}`
-                },
-                mode: "cors"
-            }).then(response => response.json()).then(response => {
-//                console.log(response)
-                if (response.ok) {
-                    setData(response.data)
-                } else {
-                    setError({code: response.code, message: response.message})
-                }
-                setLoading(true)
-            })
-//        }, 5000);
-
-//        return () => clearInterval(timer);
+        fetch("https://player.amgcompany.ru/api/default/welcome", {
+            headers: {
+                "Authorization": `Bearer ${authKey}`
+            },
+            mode: "cors"
+        }).then(response => response.json()).then(response => {
+            if (response.ok) {
+                setData(response.data)
+            } else {
+                setError({code: response.code, message: response.message})
+            }
+            setLoading(true)
+        })
     }, []);
 
     React.useEffect(() => {
         setConfig(config)
     }, [config.level])
+
+    React.useEffect(() => {
+        console.log(data.currentTrack)
+    }, [data.currentTrack])
 
     if (loading) {
         if (Object.keys(error).length) {
@@ -73,6 +75,7 @@ export default function App() {
                                               data={data} mode={{level: "root"}}/>
                                 </div>
                             </div>
+                            <Player playlist={data.currentPlaylist ? data.currentPlaylist : {tracks: data.allTracks}} state="PAUSE" currentTrack={data.currentTrack} />
                         </div>
                     )
                 case "playlist":
@@ -91,6 +94,7 @@ export default function App() {
                                 <Playlist setter={{data: setData, config: setConfig, error: setError, loading: setLoading}}
                                           data={data} mode={{level: "playlist"}}/>
                             </div>
+                            <Player playlist={data.currentPlaylist ? data.currentPlaylist : {tracks: data.allTracks}} state="PAUSE" currentTrack={data.currentTrack} />
                         </div>
                     )
                 case "user":
