@@ -1,4 +1,4 @@
-function Playlist({setter, mode, data}) {
+export default function Playlist({setter, mode, data, missingRemove = false}) {
     const [playlist, setPlaylist] = React.useState(data.currentPlaylist ?? {});
 
     function findElementById(id) {
@@ -19,7 +19,12 @@ function Playlist({setter, mode, data}) {
 
     function appendToPlaylist(playlist, event) {
         let trackId = event.target.closest(".track").getAttribute("data-key")
-        fetch(`https://garmayev.local/api/track/add-to-playlist?playlist_id=${playlist.id}&track_id=${trackId}`)
+        fetch(`https://player.amgcompany.ru/api/track/add-to-playlist?playlist_id=${playlist.id}&track_id=${trackId}`, {
+                headers: {
+                    "Authorization": `Bearer ${authKey}`
+                },
+                mode: "cors"
+            })
             .then(response => response.json())
             .then(response => {
                 let track = findElementById(trackId)
@@ -43,9 +48,10 @@ function Playlist({setter, mode, data}) {
     function removeFromPlaylist(event) {
         let trackId = event.target.closest(".track").getAttribute("data-key"),
             track = event.target.closest(".track")
-        fetch(`https://garmayev.local/api/track/remove-from-playlist?playlist_id=${playlist.id}&track_id=${trackId}`)
+        fetch(`https://player.amgcompany.ru/api/track/remove-from-playlist?playlist_id=${playlist.id}&track_id=${trackId}`)
             .then(response => response.json())
             .then(response => {
+                console.log(response);
                 if (!response.ok) {
                     setter.error({code: response.code, message: response.message})
                 } else {
@@ -61,7 +67,8 @@ function Playlist({setter, mode, data}) {
                         }
                     }
                     track.remove()
-                    setter.data({myPlaylists: data.myPlaylists, currentPlaylist: playlist})
+                    setter.data({myPlaylists: data.myPlaylists, currentPlaylist: response.playlist})
+                    setPlaylist(playlist)
                 }
             })
             .catch(error => {
@@ -77,7 +84,7 @@ function Playlist({setter, mode, data}) {
     }
 
     function toggleLike(event, track) {
-        fetch(`https://garmayev.local/api/track/favorite?id=${track.id}`)
+        fetch(`https://player.amgcompany.ru/api/track/favorite?id=${track.id}`)
             .then(response => response.json())
             .then(response => {
                 if (response.ok) {
@@ -118,46 +125,50 @@ function Playlist({setter, mode, data}) {
                     )
                 }
             })
-            buttons.push(
-                <li key={999}>
-                    <a className={"dropdown-item"} href={"#"} onClick={(event) => removeFromPlaylist(event)}>Remove from
-                        current playlist</a>
-                </li>
-            )
+            if (!missingRemove) {
+                buttons.push(
+                    <li key={999}>
+                        <a className={"dropdown-item"} href={"#"} onClick={(event) => removeFromPlaylist(event)}>Remove from
+                            current playlist</a>
+                    </li>
+                )
+            }
             let list2;
             if (playlist.tracks) {
                 list2 = playlist.tracks.map((item, index) => {
-                    let minutes = Math.floor(item.length / 60);
-                    let seconds = item.length % 60;
-                    return (
-                        <div className={"track row mb-1"} key={index} data-key={item.id}>
-                            <div className={"track-thumb col-1"}>
-                                <img src={item.thumb ?? "/img/none.png"} alt={item.title}/>
-                            </div>
-                            <div className={"track-info col-9 d-flex"}>
-                                <p className={"track-title"}>{item.title}</p>
-                                <p className={"track-artist"}>{item.artists.map(artist => artist.name).join(", ")}</p>
-                            </div>
-                            <div className={"track-length col-1 d-flex"}>
-                                <span>{minutes}:{seconds}</span>
-                            </div>
-                            <div className={"track-controls col-1 d-flex"}>
-                                {item.favorite ?
-                                    <i className={"fa-solid fa-heart"} onClick={(e) => toggleLike(e, item)}/> :
-                                    <i className={"fa-regular fa-heart"} onClick={(e) => toggleLike(e, item)}/>}
-                                <div className="btn-group">
-                                    <button type="button" className="btn btn-default dropdown-toggle"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                        <i className={"fa-solid fa-ellipsis-vertical"}/>
-                                    </button>
-                                    <ul className="dropdown-menu">
-                                        {buttons}
-                                    </ul>
+                    if (item) {
+                        let minutes = Math.floor(item.length / 60);
+                        let seconds = item.length % 60;
+                        return (
+                            <div className={"track row mb-1"} key={index} data-key={item.id}>
+                                <div className={"track-thumb col-1"}>
+                                    <img src={item.thumb ?? "/img/none.png"} alt={item.title}/>
+                                </div>
+                                <div className={"track-info col-9 d-flex"}>
+                                    <p className={"track-title"}>{item.title}</p>
+                                    <p className={"track-artist"}>{item.artists.map(artist => artist.name).join(", ")}</p>
+                                </div>
+                                <div className={"track-length col-1 d-flex"}>
+                                    <span>{minutes}:{seconds}</span>
+                                </div>
+                                <div className={"track-controls col-1 d-flex"}>
+                                    {item.favorite ?
+                                        <i className={"fa-solid fa-heart"} onClick={(e) => toggleLike(e, item)}/> :
+                                        <i className={"fa-regular fa-heart"} onClick={(e) => toggleLike(e, item)}/>}
+                                    <div className="btn-group">
+                                        <button type="button" className="btn btn-default dropdown-toggle"
+                                                data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                            <i className={"fa-solid fa-ellipsis-vertical"}/>
+                                        </button>
+                                        <ul className="dropdown-menu">
+                                            {buttons}
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )
+                        )
+                    }
                 })
             } else {
                 list2 = playlist.map((item, index) => {

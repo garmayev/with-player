@@ -12,9 +12,9 @@ use yii\filters\auth\HttpBearerAuth;
 use yii\filters\auth\QueryParamAuth;
 use yii\web\Response;
 
-class TrackController extends \yii\rest\ActiveController
+class TrackController extends \yii\web\Controller
 {
-    public $modelClass = Track::class;
+/*    public $modelClass = Track::class;
 
     public function behaviors()
     {
@@ -29,7 +29,7 @@ class TrackController extends \yii\rest\ActiveController
         ];
         $behaviors['authenticator']['except'] = ['options'];
         return $behaviors;
-    }
+    } */
 
     public function beforeAction($action)
     {
@@ -138,7 +138,7 @@ class TrackController extends \yii\rest\ActiveController
                 $trackUser->rating -= 0.2;
             }
             $trackUser->save();
-            return ["ok" => true, "playlistId" => $playlist_id, "trackId" => $track_id];
+            return ["ok" => true, "playlistId" => $playlist_id, "trackId" => $track_id, "playlist" => $playlist];
         } else {
             return ["ok" => false, "code" => 500, "message" => $playlist->getErrorSummary(true)];
         }

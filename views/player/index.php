@@ -8,7 +8,18 @@
 \app\assets\PlayerAsset::register($this);
 
 $this->registerCssFile("/css/player.css");
-$this->registerJsVar("authKey", \Yii::$app->user->identity->auth_key);
+if ( !\Yii::$app->user->isGuest ) {
+    $this->registerJsVar("authKey", \Yii::$app->user->identity->auth_key);
+}
 
 ?>
 <div id="container"></div>
+<script type="text/babel" data-plugins="transform-modules-umd" data-presets="react" data-type="module">
+import App from "../js/react/app.js"
+
+const container = document.getElementById('container');
+const root = ReactDOM.createRoot(container);
+window.audio = new Audio()
+root.render(<App />)
+
+</script>

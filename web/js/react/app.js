@@ -1,10 +1,12 @@
+import Playlist from "playlist.js"
+
 class AppState {
     static PLAYER_PAUSE = "PAUSE";
     static PLAYER_PLAY = "PLAY";
     static PLAYER_RESUME = "RESUME";
 }
 
-function App() {
+export default function App() {
     const [data, _setData] = React.useState({
     });
     const setData = props => {
@@ -22,13 +24,14 @@ function App() {
     const [error, setError] = React.useState({});
 
     React.useEffect(() => {
-        let timer = setInterval(() => {
-            fetch("https://garmayev.local/api/default/welcome", {
+//        let timer = setInterval(() => {
+            fetch("https://player.amgcompany.ru/api/default/welcome", {
                 headers: {
                     "Authorization": `Bearer ${authKey}`
                 },
                 mode: "cors"
             }).then(response => response.json()).then(response => {
+//                console.log(response)
                 if (response.ok) {
                     setData(response.data)
                 } else {
@@ -36,9 +39,9 @@ function App() {
                 }
                 setLoading(true)
             })
-        }, 5000);
+//        }, 5000);
 
-        return () => clearInterval(timer);
+//        return () => clearInterval(timer);
     }, []);
 
     React.useEffect(() => {
@@ -63,7 +66,7 @@ function App() {
                             <div className={"playlists row"}>
                                 <div className={"col-10 border-right"}>
                                     <Playlist data={{...data, currentPlaylist: {title: "", tracks: data.allTracks}}}
-                                              setter={{data: setData, error: setError}} mode={{level: "playlist"}}/>
+                                              setter={{data: setData, error: setError}} mode={{level: "playlist"}} missingRemove={true}/>
                                 </div>
                                 <div className={"col-2"}>
                                     <Playlist setter={{data: setData, config: setConfig, error: setError}}
